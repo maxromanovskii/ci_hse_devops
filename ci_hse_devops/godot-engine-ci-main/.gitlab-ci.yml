@@ -1,0 +1,33 @@
+image: debian:bullseye-slim
+
+stages:
+  - build
+  - test
+  - pack
+
+lin64_build:
+  stage: build
+  script:
+    - apt-get update && apt-get install -y gcc g++ python3 scons pkg-config libx11-dev libxcursor-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev
+    - cd /builds/ci_hse_devops
+    - scons -j2 platform=linuxbsd usellvm=yes tests=yes
+  artifacts:
+    paths:
+      - bin/*
+
+lin64_test:
+  stage: test
+  script:
+    - apt-get update && apt-get -y install gcc g++ python3 scons pkg-config libx11-dev libxcursor-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev
+    - mkdir /root/.cache
+    - "./bin/godot.linuxbsd.* --test"
+
+lin64_pack:
+  stage: pack
+  script:
+    - apt-get update && apt-get install -y gcc g++ python3 scons pkg-config libx11-dev libxcursor-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev tar gzip
+    - cd /builds/ci_hse_devops
+    - tar cf godot.tar.gz bin/* --gzip
+  artifacts:
+    paths:
+      - godot*.tar.gz
